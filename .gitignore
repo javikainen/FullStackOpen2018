@@ -1,0 +1,21 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/osa1/node_modules
+
+# testing
+/osa1/coverage
+
+# production
+/osa1/build
+
+# misc
+/osa1/.DS_Store
+/osa1/.env.local
+/osa1/.env.development.local
+/osa1/.env.test.local
+/osa1/.env.production.local
+
+/osa1/npm-debug.log*
+/osa1/yarn-debug.log*
+/osa1/yarn-error.log*
