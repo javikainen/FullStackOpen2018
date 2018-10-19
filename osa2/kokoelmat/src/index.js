@@ -14,11 +14,21 @@ const Sisalto = (props) => {
   )
 }
 
+const Yhteensa = (props) => {
+  const osat = props.kurssi.osat
+  const reducer = (accumulator, currentValue) => accumulator + currentValue.tehtavia
+
+  return(
+    <p>yhteensä {osat.reduce(reducer, 0)} tehtävää</p>
+  )
+}
+
 const Kurssi = ({ kurssi }) => {
     return (
       <div>
         <Otsikko kurssi={kurssi} />
         <Sisalto kurssi={kurssi} />
+        <Yhteensa kurssi={kurssi} />
       </div>
     )
 }
