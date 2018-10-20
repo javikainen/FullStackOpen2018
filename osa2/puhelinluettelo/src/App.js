@@ -13,16 +13,23 @@ class App extends React.Component {
 
   addPerson = (event) => {
     event.preventDefault()
-    const person = {
-      name: this.state.newName
+    if (this.state.persons.map(person => person.name).includes(this.state.newName)) {
+      alert('The name has already been added')
+      this.setState({
+        newName: ''
+      })
+    } else {
+      const person = {
+        name: this.state.newName
+      }
+
+      const persons = this.state.persons.concat(person)
+
+      this.setState({
+        persons: persons,
+        newName: ''
+      })
     }
-
-    const persons = this.state.persons.concat(person)
-
-    this.setState({
-      persons: persons,
-      newName: ''
-    })
   }
 
   handleNoteChange = (event) => {
