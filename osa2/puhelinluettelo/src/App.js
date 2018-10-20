@@ -48,6 +48,20 @@ class App extends React.Component {
     }
   }
 
+  deletePerson = (personToDelete) => (
+    () => {
+      if (window.confirm(`Poistetaanko ${personToDelete.name}?`)) {
+        personService
+          .deletePerson(personToDelete.id)
+          .then(response => {
+            this.setState({
+              persons: this.state.persons.filter(person => person.id !== personToDelete.id)
+            })
+          })
+      }
+    }
+  )
+
   handleChange = (field) => (
     (event) => {
       console.log(event.target.value)
@@ -74,7 +88,13 @@ class App extends React.Component {
         <h2>Numerot</h2>
         <table>
           <tbody>
-            {filteredPersons.map(person => <Person key={person.name} person={person} />)}
+            {filteredPersons.map(person =>
+              <Person
+                key={person.id}
+                person={person}
+                deletePerson={this.deletePerson(person)}
+              />
+            )}
           </tbody>
         </table>
       </div>
@@ -117,11 +137,13 @@ const AddPersonForm = ({ state, handleChange, addPerson }) => (
   </div>
 )
 
-const Person = ({ person })  => (
+const Person = ({ person, deletePerson })  => (
   <tr>
     <td>{person.name}</td>
     <td>{person.number}</td>
+    <td><button onClick={deletePerson}>poista</button></td>
   </tr>
+
 )
 
 export default App
