@@ -15,9 +15,7 @@ class App extends React.Component {
   componentDidMount() {
     personService
       .getAll()
-      .then(response => {
-        this.setState({ persons: response.data })
-      })
+      .then(persons => this.setState({ persons }))
   }
 
   addPerson = (event) => {
@@ -37,9 +35,9 @@ class App extends React.Component {
 
       personService
         .create(person)
-        .then(response => {
+        .then(newPerson => {
           this.setState({
-            persons: this.state.persons.concat(response.data),
+            persons: this.state.persons.concat(newPerson),
             newName: '',
             newNumber: '',
             filter: ''
@@ -48,14 +46,15 @@ class App extends React.Component {
     }
   }
 
-  deletePerson = (personToDelete) => (
+  deletePerson = (id) => (
     () => {
-      if (window.confirm(`Poistetaanko ${personToDelete.name}?`)) {
+      const name = this.state.persons.find(p => p.id === id).name
+      if (window.confirm(`Poistetaanko ${name}?`)) {
         personService
-          .deletePerson(personToDelete.id)
+          .deletePerson(id)
           .then(response => {
             this.setState({
-              persons: this.state.persons.filter(person => person.id !== personToDelete.id)
+              persons: this.state.persons.filter(person => person.id !== id)
             })
           })
       }
@@ -92,7 +91,7 @@ class App extends React.Component {
               <Person
                 key={person.id}
                 person={person}
-                deletePerson={this.deletePerson(person)}
+                deletePerson={this.deletePerson(person.id)}
               />
             )}
           </tbody>
