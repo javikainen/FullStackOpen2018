@@ -8,7 +8,8 @@ class App extends React.Component {
       persons: [],
       newName: '',
       newNumber: '',
-      filter: ''
+      filter: '',
+      statusMessage: null,
     }
   }
 
@@ -31,6 +32,7 @@ class App extends React.Component {
         .then(newPerson => {
           this.setState({
             persons: this.state.persons.concat(newPerson),
+            statusMessage: `Lisättiin ${newPerson.name}`
           })
         })
     } else if (window.confirm(`${this.state.newName} on jo luettelossa, korvataanko vanha numero uudella?`)) {
@@ -40,6 +42,7 @@ class App extends React.Component {
         .then(res_person => {
           this.setState({
             persons: this.state.persons.map(p => p.id !== res_person.id ? p : res_person),
+            statusMessage: `Päivitettiin numero henkilölle ${newPerson.name}`
           })
         })
     }
@@ -48,6 +51,11 @@ class App extends React.Component {
       newNumber: '',
       filter: ''
     })
+    setTimeout(() => {
+      this.setState({
+        statusMessage: null
+      })
+    }, 5000)
   }
 
   deletePerson = (id) => (
@@ -58,7 +66,8 @@ class App extends React.Component {
           .deletePerson(id)
           .then(response => {
             this.setState({
-              persons: this.state.persons.filter(person => person.id !== id)
+              persons: this.state.persons.filter(person => person.id !== id),
+              statusMessage: `Poistettiin ${name}`
             })
           })
       }
@@ -79,6 +88,9 @@ class App extends React.Component {
     return (
       <div>
         <h1>Puhelinluettelo</h1>
+        <Notification
+          message={this.state.statusMessage}
+        />
         <FilterForm
           state={this.state}
           handleChange={this.handleChange}
@@ -148,5 +160,16 @@ const Person = ({ person, deletePerson })  => (
   </tr>
 
 )
+
+const Notification = ({ message }) => {
+    if (message === null) {
+      return null
+    }
+    return (
+      <div className='error'>
+        {message}
+      </div>
+    )
+}
 
 export default App
