@@ -20,30 +20,34 @@ class App extends React.Component {
 
   addPerson = (event) => {
     event.preventDefault()
-    if (this.state.persons.map(person => person.name).includes(this.state.newName)) {
-      alert('The name has already been added')
-      this.setState({
-        newName: '',
-        newNumber: '',
-        filter: ''
-      })
-    } else {
+    const person = this.state.persons.find(p => p.name === this.state.newName)
+    if (person === undefined) {
       const person = {
         name: this.state.newName,
         number: this.state.newNumber
       }
-
       personService
         .create(person)
         .then(newPerson => {
           this.setState({
             persons: this.state.persons.concat(newPerson),
-            newName: '',
-            newNumber: '',
-            filter: ''
+          })
+        })
+    } else if (window.confirm(`${this.state.newName} on jo luettelossa, korvataanko vanha numero uudella?`)) {
+      const newPerson = { ...person, number: this.state.newNumber }
+      personService
+        .update(newPerson.id, newPerson)
+        .then(res_person => {
+          this.setState({
+            persons: this.state.persons.map(p => p.id !== res_person.id ? p : res_person),
           })
         })
     }
+    this.setState({
+      newName: '',
+      newNumber: '',
+      filter: ''
+    })
   }
 
   deletePerson = (id) => (
