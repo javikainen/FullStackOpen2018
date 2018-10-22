@@ -45,6 +45,21 @@ class App extends React.Component {
             statusMessage: `Päivitettiin numero henkilölle ${newPerson.name}`
           })
         })
+        .catch(error => {
+          console.log('error')
+          this.setState({
+            persons: this.state.persons.filter(person => person.id !== newPerson.id),
+          })
+          delete newPerson.id
+          personService
+            .create(newPerson)
+            .then(newPerson => {
+              this.setState({
+                persons: this.state.persons.concat(newPerson),
+                statusMessage: `Lisättiin uudelleen ${newPerson.name}`
+              })
+            })
+        })
     }
     this.setState({
       newName: '',
@@ -70,6 +85,11 @@ class App extends React.Component {
               statusMessage: `Poistettiin ${name}`
             })
           })
+        setTimeout(() => {
+          this.setState({
+            statusMessage: null
+          })
+        }, 5000)
       }
     }
   )
