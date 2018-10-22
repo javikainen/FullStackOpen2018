@@ -46,7 +46,6 @@ class App extends React.Component {
           })
         })
         .catch(error => {
-          console.log('error')
           this.setState({
             persons: this.state.persons.filter(person => person.id !== newPerson.id),
           })
