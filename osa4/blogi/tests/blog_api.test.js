@@ -97,6 +97,26 @@ describe('HTTP POST a new blog', () => {
     expect(titles).toContain('Butter')
   })
 
+  test('adding a blog with likes not defined works properly', async () => {
+    const newBlog = {
+      title: 'Asparagus x 2',
+      author: 'Saara N.',
+      url: 'https://lethemboyle.com/2018/04/25/asparagus-x-2/'
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const response = await api
+      .get('/api/blogs')
+
+    const blog = response.body.find(r => r.title === 'Asparagus x 2')
+    expect(blog.likes).toBe(0)
+  })
+
 })
 
 afterAll(() => {
