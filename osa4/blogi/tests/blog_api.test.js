@@ -51,7 +51,7 @@ beforeAll( async () => {
   }
 })
 
-describe('HTTP GET', () => {
+describe('HTTP GET blogs', () => {
   test('blogs are returned as json', async () => {
     await api
       .get('/api/blogs')
@@ -72,10 +72,32 @@ describe('HTTP GET', () => {
 
     expect(response.body[0].title).toBe('React patterns')
   })
-
 })
 
+describe('HTTP POST a new blog', () => {
+  test('adding a new blog works as expected', async () => {
+    const newBlog = {
+      title: 'Butter',
+      author: 'Saara N.',
+      url: 'https://lethemboyle.com/2018/07/02/butter/',
+      likes: 10
+    }
 
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const response = await api
+      .get('/api/blogs')
+
+    const titles = response.body.map(r => r.title)
+    expect(response.body.length).toBe(initialBlogs.length + 1)
+    expect(titles).toContain('Butter')
+  })
+
+})
 
 afterAll(() => {
   server.close()
