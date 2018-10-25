@@ -23,8 +23,9 @@ mongoose
 
 app.use(cors())
 app.use(bodyParser.json())
-app.use(morgan(':method :url :reqbody :status :res[content-length] - :response-time ms'))
-
+if ( process.env.NODE_ENV !== 'test' ) {
+  app.use(morgan(':method :url :reqbody :status :res[content-length] - :response-time ms'))
+}
 app.use('/api/blogs', blogsRouter)
 
 const server = http.createServer(app)

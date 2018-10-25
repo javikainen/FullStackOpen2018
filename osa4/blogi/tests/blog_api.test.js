@@ -117,6 +117,35 @@ describe('HTTP POST a new blog', () => {
     expect(blog.likes).toBe(0)
   })
 
+  test('trying to add a blog without a title or url causes status 400', async () => {
+    const newBlog1 = {
+      author: 'Saara N.',
+      url: 'https://lethemboyle.com/2018/07/02/butter/',
+      likes: 10
+    }
+
+    const newBlog2 = {
+      title: 'Butter',
+      author: 'Saara N.',
+      likes: 10
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog1)
+      .expect(400)
+    await api
+      .post('/api/blogs')
+      .send(newBlog2)
+      .expect(400)
+
+    const response = await api
+      .get('/api/blogs')
+
+    expect(response.body.length).toBe(initialBlogs.length + 2)
+
+  })
+
 })
 
 afterAll(() => {
