@@ -132,3 +132,16 @@ describe('favoriteBlog', () => {
     ])
   })
 })
+
+describe('mostBlogs', () => {
+  test('works correctly with an empty list', () => {
+    expect(listHelper.mostBlogs([])).toBe(undefined)
+  })
+
+  test('works correctly with a bigger list', () => {
+    expect(listHelper.mostBlogs(blogs)).toEqual({
+      author: 'Robert C. Martin',
+      blogs: 3
+    })
+  })
+})
