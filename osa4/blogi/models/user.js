@@ -6,7 +6,8 @@ const userSchema = new mongoose.Schema({
   username: String,
   passwordHash: String,
   name: String,
-  adult: Boolean
+  adult: Boolean,
+  blogs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Blog' }]
 })
 
 userSchema.statics.format = (user) => {
