@@ -97,6 +97,55 @@ describe('when the database initially contains some blogs', () => {
     })
   })
 
+  describe('deletion of a blog', () => {
+    let addedBlog
+
+    beforeAll(async () => {
+      let testBlog = new Blog({
+        title: 'This blog will be deleted',
+        author: 'Jari Avikainen',
+        url: 'n/a',
+        likes: 100
+      })
+      addedBlog = await testBlog.save()
+    })
+
+    test('deleting an existing blog works as expected', async () => {
+      const blogsAtStart = await blogsInDb()
+      await api
+        .delete(`/api/blogs/${addedBlog.id}`)
+        .expect(204)
+
+      const blogsAfterOperation = await blogsInDb()
+
+      const titles = blogsAfterOperation.map(b => b.title)
+
+      expect(titles).not.toContain(addedBlog.title)
+      expect(blogsAfterOperation.length).toBe(blogsAtStart.length -1)
+    })
+
+    test('trying to delete a non-existing blog works as expected', async () => {
+      const blogsAtStart = await blogsInDb()
+      await api
+        .delete(`/api/blogs/${await nonExistingId()}`)
+        .expect(404)
+
+      const blogsAfterOperation = await blogsInDb()
+      expect(blogsAfterOperation.length).toBe(blogsAtStart.length)
+    })
+
+    test('malformatted id is handled properly', async () => {
+      const blogsAtStart = await blogsInDb()
+      await api
+        .delete('/api/blogs/xyz')
+        .expect(400)
+
+      const blogsAfterOperation = await blogsInDb()
+      expect(blogsAfterOperation.length).toBe(blogsAtStart.length)
+    })
+
+  })
+
   afterAll(() => {
     server.close()
   })
