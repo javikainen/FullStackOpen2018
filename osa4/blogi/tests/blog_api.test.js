@@ -143,6 +143,58 @@ describe('when the database initially contains some blogs', () => {
       const blogsAfterOperation = await blogsInDb()
       expect(blogsAfterOperation.length).toBe(blogsAtStart.length)
     })
+  })
+
+  describe('updating a blog entry', () => {
+    let addedBlog
+
+    beforeAll(async () => {
+      let testBlog = new Blog({
+        title: 'This blog will be updated',
+        author: 'Jari Avikainen',
+        url: 'n/a',
+        likes: 100
+      })
+      addedBlog = format(await testBlog.save())
+    })
+
+    test('updating an existing blog entry works as expected', async () => {
+      const updatedBlog = { ...addedBlog, likes: 1000 }
+      const blogsAtStart = await blogsInDb()
+      await api
+        .put(`/api/blogs/${addedBlog.id}`)
+        .send(updatedBlog)
+        .expect(204)
+
+      const blogsAfterOperation = await blogsInDb()
+      expect(blogsAfterOperation.length).toBe(blogsAtStart.length)
+    })
+
+    test('trying to update a non-existing blog works as expected', async () => {
+      const updatedBlog = { ...addedBlog, likes: 1000 }
+      const blogsAtStart = await blogsInDb()
+      await api
+        .put(`/api/blogs/${await nonExistingId()}`)
+        .send(updatedBlog)
+        .expect(404)
+
+      const blogsAfterOperation = await blogsInDb()
+      expect(blogsAfterOperation.length).toBe(blogsAtStart.length)
+      expect(blogsAfterOperation).toEqual(blogsAtStart)
+    })
+
+    test('malformatted id is handled properly', async () => {
+      const updatedBlog = { ...addedBlog, likes: 1000 }
+      const blogsAtStart = await blogsInDb()
+      await api
+        .put('/api/blogs/xyz')
+        .send(updatedBlog)
+        .expect(400)
+
+      const blogsAfterOperation = await blogsInDb()
+      expect(blogsAfterOperation.length).toBe(blogsAtStart.length)
+      expect(blogsAfterOperation).toEqual(blogsAtStart)
+    })
 
   })
 

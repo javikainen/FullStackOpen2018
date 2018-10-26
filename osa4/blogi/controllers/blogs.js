@@ -36,4 +36,22 @@ blogsRouter.delete('/:id', async (request, response) => {
   }
 })
 
+blogsRouter.put('/:id', async (request, response) => {
+  try {
+    const blog = request.body
+    if (blog.title === undefined || blog.url === undefined) {
+      return response.status(400).json({ error: 'title or URL missing' })
+    }
+    delete(blog.id)
+    const result = await Blog.findOneAndUpdate({ '_id': request.params.id }, blog)
+    if (result) {
+      return response.status(204).end()
+    } else {
+      response.status(404).end()
+    }
+  } catch (exception) {
+    response.status(400).send(({ error: 'malformatted id' }))
+  }
+})
+
 module.exports = blogsRouter
