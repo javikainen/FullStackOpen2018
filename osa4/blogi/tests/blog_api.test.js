@@ -200,10 +200,10 @@ describe('when the database initially contains some blogs', () => {
   })
 })
 
-describe.only('when there is initially one user at db', async () => {
+describe('when there is initially one user at db', async () => {
   beforeAll(async () => {
     await User.deleteMany({})
-    const user = new User({ username: 'root', password: 'sekret', adult: true })
+    const user = new User({ username: 'root', password: 'sekret' })
     await user.save()
   })
 
@@ -218,26 +218,79 @@ describe.only('when there is initially one user at db', async () => {
     expect(response.body.length).toBe(usersInDataBase.length)
   })
 
-  test('POST /api/users succeeds with a fresh username', async () => {
-    const usersBeforeOperation = await usersInDb()
+  describe('creating new users', () => {
+    test('POST /api/users succeeds with a fresh username', async () => {
+      const usersBeforeOperation = await usersInDb()
 
-    const newUser = {
-      username: 'mluukkai',
-      name: 'Matti Luukkainen',
-      password: 'salainen',
-      adult: true
-    }
+      const newUser = {
+        username: 'mluukkai',
+        name: 'Matti Luukkainen',
+        password: 'salainen'
+      }
 
-    await api
-      .post('/api/users')
-      .send(newUser)
-      .expect(200)
-      .expect('Content-Type', /application\/json/)
+      const result = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
 
-    const usersAfterOperation = await usersInDb()
-    expect(usersAfterOperation.length).toBe(usersBeforeOperation.length+1)
-    const usernames = usersAfterOperation.map(u => u.username)
-    expect(usernames).toContain(newUser.username)
+      const usersAfterOperation = await usersInDb()
+      expect(usersAfterOperation.length).toBe(usersBeforeOperation.length+1)
+      const usernames = usersAfterOperation.map(u => u.username)
+      expect(usernames).toContain(newUser.username)
+      expect(result.body.adult).toBe(true)
+    })
+
+    test('POST /api/users requires a unique username', async () => {
+      const user1 = new User({
+        username: 'jariavik',
+        name: 'Jari Avikainen',
+        password: 'himitsu',
+        adult: 'true'
+      })
+      await user1.save()
+
+      const usersBeforeOperation = await usersInDb()
+
+      const user2 = {
+        username: 'jariavik',
+        name: 'Test user',
+        password: 'test',
+        adult: 'true'
+      }
+
+      const result = await api
+        .post('/api/users')
+        .send(user2)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+
+      expect(result.body).toEqual({ error: 'username must be unique' })
+
+      const usersAfterOperation = await usersInDb()
+      expect(usersBeforeOperation.length).toBe(usersAfterOperation.length)
+    })
+
+    test('POST /api/users requires minimum password length of 3', async () => {
+      const user = {
+        username: 'mvalkone',
+        name: 'Markku Valkonen',
+        password: 'pw',
+        adult: 'true'
+      }
+      const usersBeforeOperation = await usersInDb()
+
+      const result = await api
+        .post('/api/users')
+        .send(user)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+
+      expect(result.body).toEqual({ error: 'minimum password length is 3' })
+
+      const usersAfterOperation = await usersInDb()
+      expect(usersBeforeOperation.length).toBe(usersAfterOperation.length)
+    })
   })
 })
 
