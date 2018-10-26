@@ -6,6 +6,7 @@ const morgan = require('morgan')
 const cors = require('cors')
 const mongoose = require('mongoose')
 const blogsRouter = require('./controllers/blogs')
+const usersRouter = require('./controllers/users')
 const config = require('./utils/config')
 
 morgan.token('reqbody', (req) => {
@@ -27,6 +28,7 @@ if ( process.env.NODE_ENV !== 'test' ) {
   app.use(morgan(':method :url :reqbody :status :res[content-length] - :response-time ms'))
 }
 app.use('/api/blogs', blogsRouter)
+app.use('/api/users', usersRouter)
 
 const server = http.createServer(app)
 

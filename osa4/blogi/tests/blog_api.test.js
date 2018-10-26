@@ -2,7 +2,8 @@ const supertest = require('supertest')
 const { app, server } = require('../index')
 const api = supertest(app)
 const Blog = require('../models/blog')
-const { format, initialBlogs, nonExistingId, blogsInDb } = require('./test_helper')
+const User = require('../models/user')
+const { initialBlogs, nonExistingId, blogsInDb, usersInDb } = require('./test_helper')
 
 describe('when the database initially contains some blogs', () => {
   beforeAll( async () => {
@@ -155,7 +156,7 @@ describe('when the database initially contains some blogs', () => {
         url: 'n/a',
         likes: 100
       })
-      addedBlog = format(await testBlog.save())
+      addedBlog = Blog.format(await testBlog.save())
     })
 
     test('updating an existing blog entry works as expected', async () => {
@@ -197,9 +198,49 @@ describe('when the database initially contains some blogs', () => {
     })
 
   })
+})
 
-  afterAll(() => {
-    server.close()
+describe.only('when there is initially one user at db', async () => {
+  beforeAll(async () => {
+    await User.deleteMany({})
+    const user = new User({ username: 'root', password: 'sekret', adult: true })
+    await user.save()
   })
 
+  test('GET /api/users works as expected', async () => {
+    const usersInDataBase = await usersInDb()
+
+    const response = await api
+      .get('/api/users')
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    expect(response.body.length).toBe(usersInDataBase.length)
+  })
+
+  test('POST /api/users succeeds with a fresh username', async () => {
+    const usersBeforeOperation = await usersInDb()
+
+    const newUser = {
+      username: 'mluukkai',
+      name: 'Matti Luukkainen',
+      password: 'salainen',
+      adult: true
+    }
+
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAfterOperation = await usersInDb()
+    expect(usersAfterOperation.length).toBe(usersBeforeOperation.length+1)
+    const usernames = usersAfterOperation.map(u => u.username)
+    expect(usernames).toContain(newUser.username)
+  })
+})
+
+afterAll(() => {
+  server.close()
 })

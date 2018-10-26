@@ -6,16 +6,17 @@ const blogSchema = new mongoose.Schema({
   title: String,
   author: String,
   url: String,
-  likes: Number
+  likes: Number,
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 })
 
-blogSchema.statics.format = function(blog) {
+blogSchema.statics.format = (blog) => {
   return {
+    id: blog._id,
     title: blog.title,
     author: blog.author,
     url: blog.url,
-    likes: blog.likes,
-    id: blog._id
+    likes: blog.likes
   }
 }
 
