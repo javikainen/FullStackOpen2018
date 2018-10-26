@@ -3,7 +3,7 @@ const Blog = require('../models/blog')
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({})
-  response.json(blogs)
+  response.json(blogs.map(b => Blog.format(b)))
 })
 
 blogsRouter.post('/', async (request, response) => {
@@ -20,7 +20,7 @@ blogsRouter.post('/', async (request, response) => {
   })
 
   const savedBlog = await blog.save()
-  response.status(201).json(savedBlog)
+  response.status(201).json(Blog.format(savedBlog))
 })
 
 blogsRouter.delete('/:id', async (request, response) => {
@@ -32,7 +32,6 @@ blogsRouter.delete('/:id', async (request, response) => {
       response.status(404).end()
     }
   } catch (exception) {
-    console.log(exception)
     response.status(400).send(({ error: 'malformatted id' }))
   }
 })
