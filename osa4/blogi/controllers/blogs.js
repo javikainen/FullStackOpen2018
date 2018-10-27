@@ -7,11 +7,11 @@ blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog
     .find({})
     .populate('user', { username: 1, name: 1 })
-  response.json(blogs.map(Blog.format))
+  response.json(blogs)
 })
 
 blogsRouter.post('/', async (request, response) => {
-  const body = request.body
+  const { title, author, url, likes } = request.body
 
   try {
 
@@ -22,17 +22,17 @@ blogsRouter.post('/', async (request, response) => {
       return response.status(401).json({ error: 'token missing or invalid' })
     }
 
-    if (body.title === undefined || body.url === undefined) {
-      return response.status(400).json({ error: 'title or URL missing' })
+    if (title === undefined || url === undefined) {
+      return response.status(400).json({ error: 'url or title missing' })
     }
 
     const user = await User.findOne({ '_id': decodedToken.id })
 
     const blog = new Blog({
-      title: body.title,
-      author: body.author,
-      url: body.url,
-      likes: body.likes === undefined ? 0 : body.likes,
+      title,
+      author,
+      url,
+      likes: likes || 0,
       user: user._id
     })
 
@@ -41,7 +41,7 @@ blogsRouter.post('/', async (request, response) => {
     user.blogs = user.blogs.concat(savedBlog._id)
     await user.save()
 
-    response.status(201).json(Blog.format(savedBlog))
+    response.status(201).json(savedBlog)
   } catch(exception) {
     if (exception.name === 'JsonWebTokenError') {
       response.status(401).json({ error: exception.message })
@@ -53,8 +53,9 @@ blogsRouter.post('/', async (request, response) => {
 })
 
 blogsRouter.delete('/:id', async (request, response) => {
-  try {
+  const blogToDelete = await Blog.findOne({ '_id': request.params.id })
 
+  try {
     const token = request.token
     const decodedToken = jwt.verify(token, process.env.SECRET)
 
@@ -62,21 +63,16 @@ blogsRouter.delete('/:id', async (request, response) => {
       return response.status(401).json({ error: 'token missing or invalid' })
     }
 
-    const blogToDelete = await Blog.findOne({ '_id': request.params.id })
     if (!blogToDelete) {
       return response.status(404).end()
     }
 
     if (blogToDelete.user.toString() !== decodedToken.id) {
-      return response.status(401).json({ error: 'no delete rights' })
+      return response.status(401).json({ error: 'only creator can delete a blog' })
     }
 
-    const result = await Blog.deleteOne({ '_id': request.params.id })
-    if (result.n === 1) {
-      return response.status(204).end()
-    } else {
-      response.status(404).end()
-    }
+    await Blog.deleteOne({ '_id': request.params.id })
+    response.status(204).end()
   } catch (exception) {
     if (exception.name === 'JsonWebTokenError') {
       response.status(401).json({ error: exception.message })
@@ -91,8 +87,7 @@ blogsRouter.delete('/:id', async (request, response) => {
 
 blogsRouter.put('/:id', async (request, response) => {
   try {
-    const blog = request.body
-    delete(blog.id)
+    const { title, author, url, likes } = request.body
     const token = request.token
     const decodedToken = jwt.verify(token, process.env.SECRET)
 
@@ -100,7 +95,7 @@ blogsRouter.put('/:id', async (request, response) => {
       return response.status(401).json({ error: 'token missing or invalid' })
     }
 
-    if (blog.title === undefined || blog.url === undefined) {
+    if (title === undefined || url === undefined) {
       return response.status(400).json({ error: 'title or URL missing' })
     }
 
@@ -110,12 +105,12 @@ blogsRouter.put('/:id', async (request, response) => {
     }
 
     if (blogToUpdate.user.toString() !== decodedToken.id) {
-      return response.status(401).json({ error: 'no edit rights' })
+      return response.status(401).json({ error: 'only creator can edit a blog' })
     }
 
-    const result = await Blog.findOneAndUpdate({ '_id': request.params.id }, blog)
+    const result = await Blog.findOneAndUpdate({ '_id': request.params.id }, { title, author, url, likes }, { new: true })
     if (result) {
-      return response.status(204).end()
+      return response.send(result)
     } else {
       response.status(404).end()
     }

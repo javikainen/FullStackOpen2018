@@ -12,29 +12,29 @@ usersRouter.get('/', async (request, response) => {
 
 usersRouter.post('/', async (request, response) => {
   try {
-    const body = request.body
+    const { username, name, password, adult } = request.body
 
-    if (request.body.password.length < 3) {
-      return response.status(400).json({ error: 'minimum password length is 3' })
+    if (password.length < 3) {
+      return response.status(400).json({ error: 'password too short' })
     }
 
-    const existingUser = await User.find({ username: body.username })
-    if (existingUser.length > 0) {
+    const existingUser = await User.findOne({ username })
+    if (existingUser) {
       return response.status(400).json({ error: 'username must be unique' })
     }
 
     const saltRounds = 10
-    const passwordHash = await bcrypt.hash(body.password, saltRounds)
+    const passwordHash = await bcrypt.hash(password, saltRounds)
 
     const user = new User({
-      username: body.username,
-      name: body.name,
-      adult: body.adult === undefined ? true : body.adult,
+      username,
+      name,
+      adult: adult || true,
       passwordHash
     })
 
     const savedUser = await user.save()
-    response.json(User.format(savedUser))
+    response.status(201).json(savedUser)
   } catch (exception) {
     console.log(exception)
     response.status(500).json({ error: 'something went wrong...' })

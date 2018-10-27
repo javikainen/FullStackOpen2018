@@ -2,54 +2,60 @@ const dummy = (blogs) => {
   return 1
 }
 
+const byLikes = (b1, b2) => b2.likes - b1.likes
+
 const totalLikes = (blogs) => {
-  const reducer = (sum, blog) => {
-    return sum + blog.likes
-  }
-  return blogs.reduce(reducer, 0)
+  const sumReducer = (sum, i) => sum + i
+  return blogs.map(b => b.likes).reduce(sumReducer, 0)
 }
 
 const favoriteBlog = (blogs) => {
-  const sortedBlogs = [...blogs].sort((a, b) => b.likes - a.likes)
-  return sortedBlogs[0]
+  const favorite = [...blogs].sort(byLikes)[0]
+  return {
+    title: favorite.title,
+    author: favorite.author,
+    likes: favorite.likes
+  }
 }
 
 const mostBlogs = (blogs) => {
-  const blogCounts = {}
-  const bestAuthor = { author: 'None', blogs: 0 }
-  blogs.forEach(blog => {
-    const author = blog.author
-    const blogsSoFar = blogCounts[author]
-    if (blogsSoFar) {
-      blogCounts[author] = blogsSoFar + 1
-    } else {
-      blogCounts[author] = 1
-    }
-    if (blogCounts[author] > bestAuthor.blogs) {
-      bestAuthor.author = author
-      bestAuthor.blogs = blogCounts[author]
-    }
+  if (blogs.length === 0) {
+    return null
+  }
+
+  const reducer = (obj, blog) => {
+    obj[blog.author] = ( obj[blog.author] || 0 ) + 1
+    return obj
+  }
+
+  const authors = blogs.reduce(reducer, {})
+
+  const blogCounts = Object.keys(authors).map(name => {
+    return { author: name, blogs: authors[name] }
   })
-  return bestAuthor.blogs === 0 ? undefined : bestAuthor
+
+  const byBlogs = (b1, b2) => b2.blogs - b1.blogs
+
+  return blogCounts.sort(byBlogs)[0]
 }
 
 const mostLikes = (blogs) => {
-  const likeCounts = {}
-  const bestAuthor = { author: 'None', likes: 0 }
-  blogs.forEach(blog => {
-    const author = blog.author
-    const likesSoFar = likeCounts[author]
-    if (likesSoFar) {
-      likeCounts[author] = likesSoFar + blog.likes
-    } else {
-      likeCounts[author] = blog.likes
-    }
-    if (likeCounts[author] > bestAuthor.likes) {
-      bestAuthor.author = author
-      bestAuthor.likes = likeCounts[author]
-    }
+  if (blogs.length === 0) {
+    return null
+  }
+
+  const reducer = (obj, blog) => {
+    obj[blog.author] = ( obj[blog.author] || 0 ) + blog.likes
+    return obj
+  }
+
+  const authors = blogs.reduce(reducer, {})
+
+  const likeCounts = Object.keys(authors).map(name => {
+    return { author: name, likes: authors[name] }
   })
-  return bestAuthor.author === 'None' ? undefined : bestAuthor
+
+  return likeCounts.sort(byLikes)[0]
 }
 
 module.exports = {

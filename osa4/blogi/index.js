@@ -15,24 +15,20 @@ morgan.token('reqbody', (req) => {
   return JSON.stringify(req.body)
 })
 
-mongoose
-  .connect(config.mongoUrl, { useNewUrlParser: true })
-  .then( () => {
-    console.log('connected to database', config.mongoUrl)
-  })
-  .catch( err => {
-    console.log(err)
-  })
-
+app.use(middleware.tokenExtractor)
 app.use(cors())
 app.use(bodyParser.json())
+
+mongoose.connect(config.mongoUrl, { useNewUrlParser: true })
+mongoose.Promise = global.Promise
+
 if ( process.env.NODE_ENV !== 'test' ) {
   app.use(morgan(':method :url :reqbody :status :res[content-length] - :response-time ms'))
 }
-app.use(middleware.tokenExtractor)
-app.use('/api/blogs', blogsRouter)
-app.use('/api/users', usersRouter)
+
 app.use('/api/login', loginRouter)
+app.use('/api/users', usersRouter)
+app.use('/api/blogs', blogsRouter)
 
 const server = http.createServer(app)
 
