@@ -92,10 +92,27 @@ blogsRouter.delete('/:id', async (request, response) => {
 blogsRouter.put('/:id', async (request, response) => {
   try {
     const blog = request.body
+    delete(blog.id)
+    const token = request.token
+    const decodedToken = jwt.verify(token, process.env.SECRET)
+
+    if (!token || !decodedToken.id) {
+      return response.status(401).json({ error: 'token missing or invalid' })
+    }
+
     if (blog.title === undefined || blog.url === undefined) {
       return response.status(400).json({ error: 'title or URL missing' })
     }
-    delete(blog.id)
+
+    const blogToUpdate = await Blog.findOne({ '_id': request.params.id })
+    if (!blogToUpdate) {
+      return response.status(404).end()
+    }
+
+    if (blogToUpdate.user.toString() !== decodedToken.id) {
+      return response.status(401).json({ error: 'no edit rights' })
+    }
+
     const result = await Blog.findOneAndUpdate({ '_id': request.params.id }, blog)
     if (result) {
       return response.status(204).end()
@@ -103,7 +120,14 @@ blogsRouter.put('/:id', async (request, response) => {
       response.status(404).end()
     }
   } catch (exception) {
-    response.status(400).send(({ error: 'malformatted id' }))
+    if (exception.name === 'JsonWebTokenError') {
+      response.status(401).json({ error: exception.message })
+    } else if (exception.name === 'CastError') {
+      response.status(400).send(({ error: 'malformatted id' }))
+    } else {
+      console.log(exception)
+      response.status(500).json({ error: 'something went wrong... ' })
+    }
   }
 })
 
