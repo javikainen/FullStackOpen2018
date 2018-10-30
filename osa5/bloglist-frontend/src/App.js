@@ -8,10 +8,13 @@ class App extends React.Component {
     super(props)
     this.state = {
       blogs: [],
+      error: null,
       username: '',
       password: '',
       user: null,
-      error: null,
+      blogTitle: '',
+      blogAuthor: '',
+      blogUrl: '',
     }
   }
 
@@ -24,6 +27,7 @@ class App extends React.Component {
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       this.setState({ user })
+      blogService.setToken(user.token)
     }
   }
 
@@ -36,6 +40,7 @@ class App extends React.Component {
       })
 
       window.localStorage.setItem('loggedBloglistUser', JSON.stringify(user))
+      blogService.setToken(user.token)
       this.setState({ username: '', password: '', user })
     } catch(exception) {
       this.setState({
@@ -49,49 +54,57 @@ class App extends React.Component {
 
   logout = (event) => {
     window.localStorage.removeItem('loggedBloglistUser')
+    blogService.setToken(null)
     this.setState({ username: '', password: '', user: null })
   }
 
-  handleLoginFieldChange = (event) => {
+  handleFieldChange = (event) => {
     this.setState({ [event.target.name]: event.target.value })
+  }
+
+  addBlog = async (event) => {
+    event.preventDefault()
+    try {
+      const blogObject = {
+        title: this.state.blogTitle,
+        author: this.state.blogAuthor,
+        url: this.state.blogUrl,
+      }
+
+      const result = await blogService.create(blogObject)
+      this.setState({
+        blogs: this.state.blogs.concat(result),
+        blogTitle: '',
+        blogAuthor: '',
+        blogUrl: '',
+      })
+    } catch(exception) {
+      console.log(exception)
+    }
   }
 
   render() {
     if (this.state.user === null) {
       return (
-        <div>
-          <h2>Log in to application</h2>
-          <form onSubmit={this.login}>
-            <div>
-              username
-              <input
-                type='text'
-                name='username'
-                value={this.state.username}
-                onChange={this.handleLoginFieldChange}
-              />
-            </div>
-            <div>
-              password
-              <input
-                type='password'
-                name='password'
-                value={this.state.password}
-                onChange={this.handleLoginFieldChange}
-              />
-            </div>
-            <button type='submit'>login</button>
-          </form>
-        </div>
+        <LoginForm
+          state={this.state}
+          handleChange={this.handleFieldChange}
+          login={this.login}
+        />
       )
     }
     return (
       <div>
-        <h2>blogs</h2>
-        <p>
-          {this.state.user.name} logged in
-          <button onClick={this.logout}>logout</button>
-        </p>
+        <h2>Blogs</h2>
+        {this.state.user.name} logged in
+        <button onClick={this.logout}>logout</button>
+        <br></br>
+        <BlogForm
+          state={this.state}
+          handleChange={this.handleFieldChange}
+          addBlog={this.addBlog}
+        />
+        <br></br>
         {this.state.blogs.map(blog =>
           <Blog key={blog._id} blog={blog}/>
         )}
@@ -99,5 +112,68 @@ class App extends React.Component {
     );
   }
 }
+
+const LoginForm = ({ state, handleChange, login }) => (
+  <div>
+    <h2>Log in to application</h2>
+    <form onSubmit={login}>
+      <div>
+        username
+        <input
+          type='text'
+          name='username'
+          value={state.username}
+          onChange={handleChange}
+        />
+      </div>
+      <div>
+        password
+        <input
+          type='password'
+          name='password'
+          value={state.password}
+          onChange={handleChange}
+        />
+      </div>
+      <button type='submit'>login</button>
+    </form>
+  </div>
+)
+
+const BlogForm = ({ state, handleChange, addBlog }) => (
+  <div>
+    <h3>Create a new blog</h3>
+    <form onSubmit={addBlog}>
+      <div>
+        title:
+        <input
+          type='text'
+          name='blogTitle'
+          value={state.blogTitle}
+          onChange={handleChange}
+        />
+      </div>
+      <div>
+        author:
+        <input
+          type='text'
+          name='blogAuthor'
+          value={state.blogAuthor}
+          onChange={handleChange}
+        />
+      </div>
+      <div>
+        url:
+        <input
+          type='text'
+          name='blogUrl'
+          value={state.blogUrl}
+          onChange={handleChange}
+        />
+      </div>
+      <button type='submit'>create</button>
+    </form>
+  </div>
+)
 
 export default App;
