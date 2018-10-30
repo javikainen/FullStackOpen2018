@@ -8,6 +8,7 @@ class App extends React.Component {
     super(props)
     this.state = {
       blogs: [],
+      notification: null,
       error: null,
       username: '',
       password: '',
@@ -44,7 +45,7 @@ class App extends React.Component {
       this.setState({ username: '', password: '', user })
     } catch(exception) {
       this.setState({
-        error: 'invalid username or password',
+        error: 'Invalid username or password',
       })
       setTimeout(() => {
         this.setState({ error: null })
@@ -77,7 +78,11 @@ class App extends React.Component {
         blogTitle: '',
         blogAuthor: '',
         blogUrl: '',
+        notification: `A new blog '${result.title}' by ${result.author} added`
       })
+      setTimeout(() => {
+        this.setState({ notification: null })
+      }, 5000)
     } catch(exception) {
       console.log(exception)
     }
@@ -86,16 +91,30 @@ class App extends React.Component {
   render() {
     if (this.state.user === null) {
       return (
-        <LoginForm
-          state={this.state}
-          handleChange={this.handleFieldChange}
-          login={this.login}
-        />
+        <div>
+          <Notification
+            message={this.state.notification}
+          />
+          <Error
+            message={this.state.error}
+          />
+          <LoginForm
+            state={this.state}
+            handleChange={this.handleFieldChange}
+            login={this.login}
+          />
+        </div>
       )
     }
     return (
       <div>
         <h2>Blogs</h2>
+        <Notification
+          message={this.state.notification}
+        />
+        <Error
+          message={this.state.error}
+        />
         {this.state.user.name} logged in
         <button onClick={this.logout}>logout</button>
         <br></br>
@@ -175,5 +194,27 @@ const BlogForm = ({ state, handleChange, addBlog }) => (
     </form>
   </div>
 )
+
+const Notification = ({ message }) => {
+    if (message === null) {
+      return null
+    }
+    return (
+      <div className='notification'>
+        {message}
+      </div>
+    )
+}
+
+const Error = ({ message }) => {
+    if (message === null) {
+      return null
+    }
+    return (
+      <div className='error'>
+        {message}
+      </div>
+    )
+}
 
 export default App;
