@@ -1,5 +1,10 @@
 import React from 'react'
 import Blog from './components/Blog'
+import LoginForm from './components/LoginForm'
+import BlogForm from './components/BlogForm'
+import Notification from './components/Notification'
+import ErrorMessage from './components/ErrorMessage'
+import Togglable from './components/Togglable'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -73,6 +78,7 @@ class App extends React.Component {
       }
 
       const result = await blogService.create(blogObject)
+      this.blogForm.toggleVisibility()
       this.setState({
         blogs: this.state.blogs.concat(result),
         blogTitle: '',
@@ -85,6 +91,12 @@ class App extends React.Component {
       }, 5000)
     } catch(exception) {
       console.log(exception)
+      this.setState({
+        error: `Unable to add the blog for some reason (${exception})`,
+      })
+      setTimeout(() => {
+        this.setState({ error: null })
+      }, 5000)
     }
   }
 
@@ -95,7 +107,7 @@ class App extends React.Component {
           <Notification
             message={this.state.notification}
           />
-          <Error
+          <ErrorMessage
             message={this.state.error}
           />
           <LoginForm
@@ -112,17 +124,19 @@ class App extends React.Component {
         <Notification
           message={this.state.notification}
         />
-        <Error
+        <ErrorMessage
           message={this.state.error}
         />
         {this.state.user.name} logged in
-        <button onClick={this.logout}>logout</button>
+        <button onClick={this.logout}>Logout</button>
         <br></br>
-        <BlogForm
-          state={this.state}
-          handleChange={this.handleFieldChange}
-          addBlog={this.addBlog}
-        />
+        <Togglable buttonLabel='New blog' ref={component => this.blogForm = component}>
+          <BlogForm
+            state={this.state}
+            handleChange={this.handleFieldChange}
+            onSubmit={this.addBlog}
+          />
+        </Togglable>
         <br></br>
         {this.state.blogs.map(blog =>
           <Blog key={blog._id} blog={blog}/>
@@ -132,89 +146,5 @@ class App extends React.Component {
   }
 }
 
-const LoginForm = ({ state, handleChange, login }) => (
-  <div>
-    <h2>Log in to application</h2>
-    <form onSubmit={login}>
-      <div>
-        username
-        <input
-          type='text'
-          name='username'
-          value={state.username}
-          onChange={handleChange}
-        />
-      </div>
-      <div>
-        password
-        <input
-          type='password'
-          name='password'
-          value={state.password}
-          onChange={handleChange}
-        />
-      </div>
-      <button type='submit'>login</button>
-    </form>
-  </div>
-)
-
-const BlogForm = ({ state, handleChange, addBlog }) => (
-  <div>
-    <h3>Create a new blog</h3>
-    <form onSubmit={addBlog}>
-      <div>
-        title:
-        <input
-          type='text'
-          name='blogTitle'
-          value={state.blogTitle}
-          onChange={handleChange}
-        />
-      </div>
-      <div>
-        author:
-        <input
-          type='text'
-          name='blogAuthor'
-          value={state.blogAuthor}
-          onChange={handleChange}
-        />
-      </div>
-      <div>
-        url:
-        <input
-          type='text'
-          name='blogUrl'
-          value={state.blogUrl}
-          onChange={handleChange}
-        />
-      </div>
-      <button type='submit'>create</button>
-    </form>
-  </div>
-)
-
-const Notification = ({ message }) => {
-    if (message === null) {
-      return null
-    }
-    return (
-      <div className='notification'>
-        {message}
-      </div>
-    )
-}
-
-const Error = ({ message }) => {
-    if (message === null) {
-      return null
-    }
-    return (
-      <div className='error'>
-        {message}
-      </div>
-    )
-}
 
 export default App;
