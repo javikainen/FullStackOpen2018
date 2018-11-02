@@ -1,11 +1,20 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 
 class Blog extends React.Component {
+
   constructor(props) {
     super(props)
     this.state = {
       visible: false
     }
+  }
+
+  static propTypes = {
+    addLike: PropTypes.func.isRequired,
+    deleteBlog: PropTypes.func.isRequired,
+    blog: PropTypes.object.isRequired,
+    user: PropTypes.object.isRequired
   }
 
   toggleVisibility = () => {
