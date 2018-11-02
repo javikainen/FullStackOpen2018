@@ -5,7 +5,8 @@ module.exports = {
         "jest": true,
     },
     "extends": [
-      "eslint:recommended"
+      "eslint:recommended",
+      "react-app"
     ],
     "parserOptions": {
         "ecmaVersion": 2018

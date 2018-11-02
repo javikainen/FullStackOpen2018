@@ -142,9 +142,8 @@ class App extends React.Component {
           <Blog key={blog._id} blog={blog}/>
         )}
       </div>
-    );
+    )
   }
 }
 
-
-export default App;
+export default App
