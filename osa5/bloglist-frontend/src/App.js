@@ -127,6 +127,28 @@ class App extends React.Component {
     }
   )
 
+  deleteBlog = (blog) => (
+    async () => {
+      if (!window.confirm(`Delete '${blog.title}' by ${blog.author}?`)) {
+        return
+      }
+      try {
+        await blogService.deleteBlog(blog._id)
+        this.setState({
+          blogs: this.state.blogs.filter(b => b._id !== blog._id)
+        })
+      } catch(exception) {
+        console.log(exception)
+        this.setState({
+          error: `Unable to delete the blog for some reason (${exception})`,
+        })
+        setTimeout(() => {
+          this.setState({ error: null })
+        }, 5000)
+      }
+    }
+  )
+
   render() {
     if (this.state.user === null) {
       return (
@@ -166,7 +188,13 @@ class App extends React.Component {
         </Togglable>
         <br></br>
         {this.state.blogs.sort((b1, b2) => b2.likes - b1.likes).map(blog =>
-          <Blog key={blog._id} blog={blog} addLike={this.addLike(blog)}/>
+          <Blog
+            key={blog._id}
+            blog={blog}
+            addLike={this.addLike(blog)}
+            deleteBlog={this.deleteBlog(blog)}
+            user={this.state.user}
+          />
         )}
       </div>
     )
