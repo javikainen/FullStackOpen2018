@@ -24,10 +24,9 @@ class App extends React.Component {
     }
   }
 
-  componentDidMount() {
-    blogService.getAll().then(blogs =>
-      this.setState({ blogs })
-    )
+  async componentDidMount() {
+    const blogs = await blogService.getAll()
+    this.setState({ blogs })
 
     const loggedUserJSON = window.localStorage.getItem('loggedBloglistUser')
     if (loggedUserJSON) {
@@ -100,6 +99,34 @@ class App extends React.Component {
     }
   }
 
+  addLike = (blog) => (
+    async () => {
+      try {
+        let { _id, user, likes, author, title, url } = blog
+        let newBlog = {
+          user: user._id,
+          likes: likes + 1,
+          title,
+          url,
+          author,
+        }
+        await blogService.update(_id, newBlog)
+        this.setState({
+          blogs: this.state.blogs.map(blog => blog._id !== _id ? blog : {
+            user,
+            likes: likes + 1,
+            title,
+            url,
+            author,
+            _id,
+          })
+        })
+      } catch(exception) {
+        console.log(exception)
+      }
+    }
+  )
+
   render() {
     if (this.state.user === null) {
       return (
@@ -139,7 +166,7 @@ class App extends React.Component {
         </Togglable>
         <br></br>
         {this.state.blogs.map(blog =>
-          <Blog key={blog._id} blog={blog}/>
+          <Blog key={blog._id} blog={blog} addLike={this.addLike(blog)}/>
         )}
       </div>
     )
