@@ -193,7 +193,7 @@ class App extends React.Component {
             blog={blog}
             addLike={this.addLike(blog)}
             deleteBlog={this.deleteBlog(blog)}
-            user={this.state.user}
+            currentUser={this.state.user}
           />
         )}
       </div>
