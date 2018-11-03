@@ -14,7 +14,7 @@ class App extends React.Component {
   )
 
   render() {
-    const anecdotes = this.props.store.getState()
+    const anecdotes = [...this.props.store.getState()].sort((a1, a2) => a2.votes - a1.votes)
     return (
       <div>
         <h2>Anecdotes</h2>
