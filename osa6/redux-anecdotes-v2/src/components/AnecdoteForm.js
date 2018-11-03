@@ -9,6 +9,7 @@ class AnecdoteForm extends React.Component {
 
     e.target.anecdote.value = ''
   }
+
   render() {
     return (
       <div>
