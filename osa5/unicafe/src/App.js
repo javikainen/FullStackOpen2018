@@ -1,7 +1,8 @@
 import React from 'react'
 
-const Statistics = () => {
-  const n_feedback = 0
+const Statistics = ({ store }) => {
+  const { good, ok, bad } = store.getState()
+  const n_feedback = good + ok + bad
 
   if (n_feedback === 0) {
     return (
@@ -19,36 +20,31 @@ const Statistics = () => {
         <tbody>
           <tr>
             <td>Good</td>
-            <td></td>
+            <td>{good}</td>
           </tr>
           <tr>
             <td>Neutral</td>
-            <td></td>
+            <td>{ok}</td>
           </tr>
           <tr>
             <td>Bad</td>
-            <td></td>
+            <td>{bad}</td>
           </tr>
           <tr>
-            <td>Average</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td>Positive</td>
-            <td></td>
+            <td>Good</td>
+            <td>{(good / n_feedback * 100).toFixed(1)} %</td>
           </tr>
         </tbody>
       </table>
 
-      <button>Reset statistics</button>
+      <button onClick={e => store.dispatch({ type: 'ZERO' })}>Reset statistics</button>
     </div >
   )
 }
 
 class App extends React.Component {
-  click = (button) => () => {
 
-  }
+  click = (button) => () => this.props.store.dispatch({ type: button })
 
   render() {
     return (
@@ -57,7 +53,7 @@ class App extends React.Component {
         <button onClick={this.click('GOOD')}>Good</button>
         <button onClick={this.click('OK')}>Neutral</button>
         <button onClick={this.click('BAD')}>Bad</button>
-        <Statistics />
+        <Statistics store={this.props.store}/>
       </div>
     )
   }
