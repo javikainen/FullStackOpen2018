@@ -28,7 +28,7 @@ class App extends React.Component {
     const blogs = await blogService.getAll()
     this.setState({ blogs })
 
-    const loggedUserJSON = window.localStorage.getItem('loggedBloglistUser')
+    const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       this.setState({ user })
@@ -44,7 +44,7 @@ class App extends React.Component {
         password: this.state.password
       })
 
-      window.localStorage.setItem('loggedBloglistUser', JSON.stringify(user))
+      window.localStorage.setItem('loggedBlogAppUser', JSON.stringify(user))
       blogService.setToken(user.token)
       this.setState({ username: '', password: '', user })
     } catch(exception) {
@@ -58,7 +58,7 @@ class App extends React.Component {
   }
 
   logout = (event) => {
-    window.localStorage.removeItem('loggedBloglistUser')
+    window.localStorage.removeItem('loggedBlogAppUser')
     blogService.setToken(null)
     this.setState({ username: '', password: '', user: null })
   }
@@ -152,7 +152,7 @@ class App extends React.Component {
   render() {
     if (this.state.user === null) {
       return (
-        <div>
+        <div className='loginView'>
           <Notification
             message={this.state.notification}
           />
@@ -168,7 +168,7 @@ class App extends React.Component {
       )
     }
     return (
-      <div>
+      <div className='blogView'>
         <h2>Blogs</h2>
         <Notification
           message={this.state.notification}
