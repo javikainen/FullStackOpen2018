@@ -17,17 +17,27 @@ const anecdoteReducer = (state = [], action) => {
   }
 }
 
-export const anecdoteCreation = (anecdote) => {
-  return {
-    type: 'CREATE',
-    anecdote
+export const createAnecdote = (anecdote) => {
+  return async (dispatch) => {
+    const newAnecdote = await anecdoteService.createNew(anecdote)
+    dispatch({
+      type: 'CREATE',
+      anecdote: newAnecdote
+    })
   }
 }
 
-export const anecdoteVoting = (id) => {
-  return {
-    type : 'VOTE',
-    id
+export const voteForAnecdote = (anecdote) => {
+  return async (dispatch) => {
+    const newAnecdote = {
+      content: anecdote.content,
+      votes: anecdote.votes + 1
+    }
+    await anecdoteService.update(anecdote.id, newAnecdote)
+    dispatch({
+      type : 'VOTE',
+      id: anecdote.id
+    })
   }
 }
 
