@@ -1,21 +1,12 @@
 import React from 'react'
+import { connect } from 'react-redux'
 import { setFilter } from '../reducers/filterReducer'
 
 class Filter extends React.Component {
-  componentDidMount() {
-    const { store } = this.props
-    this.unsubscribe = store.subscribe(() =>
-      this.forceUpdate()
-    )
-  }
-
-  componentWillUnmount() {
-    this.unsubscribe()
-  }
-
   handleChange = (event) => {
-    this.props.store.dispatch(setFilter(event.target.value))
+    this.props.setFilter(event.target.value)
   }
+
   render() {
     const style = {
       marginBottom: 10
@@ -29,4 +20,13 @@ class Filter extends React.Component {
   }
 }
 
-export default Filter
+const mapDispatchToProps = {
+  setFilter
+}
+
+const ConnectedFilter = connect(
+  null,
+  mapDispatchToProps
+)(Filter)
+
+export default ConnectedFilter
